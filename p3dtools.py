@@ -11,6 +11,9 @@ class p3dGrid(object):
   X      = np.array([])
   iblank = np.array([],dtype=np.int32)
 
+  def __init__(self):
+    pass
+
 class TurnsGrid(p3dGrid):
   '''Class to read and work with a TURNS formatted grid'''
 
@@ -48,7 +51,7 @@ class TurnsGrid(p3dGrid):
                 self.X[j,k,l,n] = struct.unpack('d',f.read(sizedbl))[0]
 
       elif record==self.xyzsize+self.ibsize:
-        print "iblank data included"
+        print "Reading TURNS grid (%s): iblank data included"%gridfile
         self.X = np.zeros((self.jmax,self.kmax,self.lmax,3))
         self.iblank  = np.zeros((self.jmax,self.kmax,self.lmax),dtype=np.int32)
        
@@ -93,58 +96,62 @@ class TurnsBlade(TurnsGrid):
         break
     print "jtail1, jtail2 (python/C++ indexes):", self.jtail1, self.jtail2
 
-def p3dGrids(object):
+class p3dGrids(object):
   '''Container class for multiple plot3d grids'''
 
-  def write_moose_file(outfile):
+  # List of p3dGrid objects
+  grids = []
+
+  def __init__(self):
+    '''Empty constructor'''
     pass
+
+  def write_moose_file(self,outfile):
+    f = open(outfile,'wb')
+
+    # ngrids and records
+    ngrids = len(self.grids)
+    f.write(struct.pack('i',4))
+    f.write(struct.pack('i',ngrids))
+    f.write(struct.pack('i',4))
+
+    # Write grid dimensions
+    record = ngrids*3*4 # 3=ndim, 4=size(int)
+    f.write(struct.pack('i',record))
+    for ng in range(ngrids):
+      f.write(struct.pack('i',self.grids[ng].jmax))
+      f.write(struct.pack('i',self.grids[ng].kmax))
+      f.write(struct.pack('i',self.grids[ng].lmax))
+    f.write(struct.pack('i',record))
+
+    # Write grid data
+    for ng in range(ngrids):
+      record = (self.grids[ng].jmax*self.grids[ng].kmax*self.grids[ng].lmax)*(sizedbl*3+sizeint) # 8=sizeof(double), 3=ndim, 4=sizeof(int) for iblank
+      f.write(struct.pack('i',record))
+      # Loop to write xyz data
+      for n in range(3):
+        for l in range(self.grids[ng].lmax):
+          for k in range(self.grids[ng].kmax):
+            for j in range(self.grids[ng].jmax):
+              f.write(struct.pack('d',self.grids[ng].X[j,k,l,n]))
+
+      # Write iblank data
+      for l in range(self.grids[ng].lmax):
+        for k in range(self.grids[ng].kmax):
+          for j in range(self.grids[ng].jmax):
+            f.write(struct.pack('i',self.grids[ng].iblank[j,k,l]))
+      f.write(struct.pack('i',record))
+
 
 def turns2moose(gridfiles, outfile):
   '''Routine to convert files from TURNS format to that required for MOOSE '''
 
-  ngrids = len(gridfiles)
-
-  turnsgrids = []
-  for n,grid in enumerate(gridfiles):
-
-    # Read grid and add it to list
-    turnsgrids.append(turnsgrid(grid))
-
-  # Write moose file
-  f = open(outfile,'wb')
-
-  # ngrids and records
-  f.write(struct.pack('i',4))
-  f.write(struct.pack('i',ngrids))
-  f.write(struct.pack('i',4))
-
-  # Grid dimensions
-  record = ngrids*3*4 # 3=ndim, 4=size(int)
-  f.write(struct.pack('i',record))
-  for ng in range(ngrids):
-    f.write(struct.pack('i',turnsgrids[ng].jmax))
-    f.write(struct.pack('i',turnsgrids[ng].kmax))
-    f.write(struct.pack('i',turnsgrids[ng].lmax))
-  f.write(struct.pack('i',record))
-
-  # Grid data
-  for ng in range(ngrids):
-    record = (turnsgrids[ng].jmax*turnsgrids[ng].kmax*turnsgrids[ng].lmax)*(sizedbl*3+sizeint) # 8=sizeof(double), 3=ndim, 4=sizeof(int) for iblank
-    f.write(struct.pack('i',record))
-    # Loop to write xyz data
-    for n in range(3):
-      for l in range(turnsgrids[ng].lmax):
-        for k in range(turnsgrids[ng].kmax):
-          for j in range(turnsgrids[ng].jmax):
-            f.write(struct.pack('d',turnsgrids[ng].X[j,k,l,n]))
-
-    # Loop to write iblank data
-    for l in range(turnsgrids[ng].lmax):
-      for k in range(turnsgrids[ng].kmax):
-        for j in range(turnsgrids[ng].jmax):
-          f.write(struct.pack('i',turnsgrids[ng].iblank[j,k,l]))
-    f.write(struct.pack('i',record))
-
+  grid_collection = p3dGrids()
+  for grid in gridfiles:
+    new_grid = TurnsGrid(grid)
+    grid_collection.grids.append(new_grid)
+  grid_collection.write_moose_file(outfile)
+  
 
 if __name__=="__main__":
     
