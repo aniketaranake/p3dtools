@@ -8,60 +8,26 @@ class p3dGrids(object):
 
   grids = []
   def __init__(self):
-    pass
+    self.grids = []
 
   def write_moose_grid(self,outfile):
 
     # Lists of jmax,kmax,lmax for all grids
-    ngrids = len(grids)
+    ngrids = len(self.grids)
     jmax = np.zeros([ngrids])
     kmax = np.zeros([ngrids])
     lmax = np.zeros([ngrids])
     for ng in range(ngrids):
-      jmax[ng] = grids[ng].jmax
-      kmax[ng] = grids[ng].kmax
-      lmax[ng] = grids[ng].lmax
-    jmm = max(jmax)
-    kmm = max(kmax)
-    lmm = max(lmax)
+      jmax[ng] = self.grids[ng].jmax
+      kmax[ng] = self.grids[ng].kmax
+      lmax[ng] = self.grids[ng].lmax
 
-    write_moose_grid_dimensions(outfile,jmm,kmm,lmm)
+    write_moose_grid_dimensions(outfile,jmax,kmax,lmax)
 
-
-#    f = open(outfile,'wb')
-#
-#    # ngrids and records
-#    f.write(struct.pack('i',4))
-#    f.write(struct.pack('i',ngrids))
-#    f.write(struct.pack('i',4))
-#
-#    # Grid dimensions
-#    ngrids = len(grids)
-#    record = ngrids*3*4 # 3=ndim, 4=size(int)
-#    f.write(struct.pack('i',record))
-#    for ng in range(ngrids):
-#      f.write(struct.pack('i',self.grids[ng].jmax))
-#      f.write(struct.pack('i',self.grids[ng].kmax))
-#      f.write(struct.pack('i',self.grids[ng].lmax))
-#    f.write(struct.pack('i',record))
-#
-#    # Grid data
-#    for ng in range(ngrids):
-#      record = (self.grids[ng].jmax*self.grids[ng].kmax*self.grids[ng].lmax)*(8*3+4) # 8=sizeof(double), 3=ndim, 4=sizeof(int) for iblank
-#      f.write(struct.pack('i',record))
-#      # Loop to write xyz data
-#      for n in range(3):
-#        for l in range(self.grids[ng].lmax):
-#          for k in range(self.grids[ng].kmax):
-#            for j in range(self.grids[ng].jmax):
-#              f.write(struct.pack('d',self.grids[ng].xyzdata[j,k,l,n]))
-#
-#      # Loop to write iblank data
-#      for l in range(self.grids[ng].lmax):
-#        for k in range(self.grids[ng].kmax):
-#          for j in range(self.grids[ng].jmax):
-#            f.write(struct.pack('i',self.grids[ng].ibdata[j,k,l]))
-#      f.write(struct.pack('i',record))
+    # Write each set of grid data
+    for ng in range(ngrids):
+      # TODO: Left off here!!!
+      write_moose_grid_data(outfile,self.grids[ng].X,self.grids[ng].iblank,include_iblank)
 
 
 
@@ -89,6 +55,9 @@ class TurnsGrid(p3dGrid):
     read_turns_grid_data(gridfile, includes_iblank, self.X, self.iblank)
     # read_turns_grid_data(gridfile,self.X)
 
+    self.jmax = jmax
+    self.kmax = kmax
+    self.lmax = lmax
     print self.X[0,0,0,:]
 
 
