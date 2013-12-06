@@ -1,25 +1,36 @@
 __all__ = ["turnsgrid","turnsblade","turns2moose"]
 import struct
 import numpy as np
+from gridtools import *
 
-class turnsgrid(object):
+class TurnsGrid(object):
   '''Class to read and work with a TURNS formatted grid'''
 
-  def __init__(self, gridfile):
-
-    try:
-
-      # Read the grid dimensions 
-      
+  def __init__(self, gridfile, includes_iblank=True):
 
 
-class turnsblade(turnsgrid):
+    # Read the grid dimensions 
+    jmax,kmax,lmax = read_turns_grid_dimensions(gridfile) 
+    print "Reading %s: jmax,kmax,lmax = "%gridfile, jmax, kmax, lmax
+
+    # Allocate grid
+    self.X      = np.asfortranarray(np.empty([jmax,kmax,lmax,3],dtype='f8'))
+    self.iblank = np.asfortranarray(np.zeros([jmax,kmax,lmax],dtype='i4'))
+
+    # Read grid data
+    read_turns_grid_data(gridfile, includes_iblank, self.X, self.iblank)
+    # read_turns_grid_data(gridfile,self.X)
+
+    print self.X[0,0,0,:]
+
+
+class TurnsBlade(TurnsGrid):
   '''turnsgrid class with extra features specific to a blade'''
 
   def __init__(self,gridfile):
 
     # Read grid
-    super(turnsblade,self).__init__(gridfile)
+    super(TurnsBlade,self).__init__(gridfile)
 
     # Compute jtail1, jtail2, jlead
     self.jlead = self.jmax/2
@@ -82,4 +93,4 @@ def turns2moose(gridfiles, outfile):
 
 
 if __name__=="__main__":
-    
+   pass 
