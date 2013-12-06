@@ -55,6 +55,20 @@
       close(1)
       end subroutine
 
+      subroutine write_turns_sol_(outfile, Q, mach, alfa, rey, time, 
+     >                            jmax, kmax, lmax)
+      character *40 outfile
+      integer jmax,kmax,lmax
+      double precision Q(jmax,kmax,lmax,5), mach, alfa, rey, time
+!f2py intent(in) outfile, Q, mach, alfa, rey, time, jmax, kmax, lmax
+      integer j,k,l,n
+      open(unit=1, file=outfile, form='unformatted')
+      write(1) jmax, kmax, lmax
+      write(1) mach, alfa, rey, time 
+      write(1) ((((Q(j,k,l,n),j=1,jmax),k=1,kmax),l=1,lmax),n=1,5)
+      close(1)
+      end subroutine
+
 !
 ! ---------------------------------------------------------------------------
 !

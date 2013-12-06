@@ -125,6 +125,14 @@ class MooseSolution(object):
     for ng in range(ngrids):
       self.Q.append(bigQ[:jmax[ng],:kmax[ng],:lmax[ng],:,ng]) 
 
+  def write_turns_sol(self,prefix):
+    ngrids = len(self.grids.grids)
+
+    for ng in range(ngrids):
+      outfile = "%s.%d"%(prefix,ng)
+      print self.Q[ng][:,:,:,:5]
+      write_turns_sol_(outfile,self.Q[ng][:,:,:,:5],0.0,0.0,0.0,0.0)
+
 def turns2moose(gridfiles, outfile):
   '''Routine to convert files from TURNS format to that required for MOOSE '''
 
