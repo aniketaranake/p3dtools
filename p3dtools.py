@@ -13,25 +13,14 @@ class p3dGrids(object):
   def read_moose_grid(self,infile,include_iblank=True):
     self.grids = []
     ngrids = read_moose_grid_ngrids(infile)
-    print 'ngrids = ', ngrids
     jmax,kmax,lmax = read_moose_grid_dimensions(infile,ngrids)
-    print 'jmax,kmax,lmax = ', jmax, kmax, lmax
     jmm = max(jmax)
     kmm = max(kmax)
     lmm = max(lmax)
-    print 'reading moose data...'
     X, iblank = read_moose_grid_data(infile,include_iblank,jmax,kmax,lmax,jmm,kmm,lmm)
-    print 'creating grid objects...'
 
     for ng in range(ngrids):
-      print ng, jmax[ng], kmax[ng], lmax[ng]
       self.grids.append(p3dGrid(X[:jmax[ng],:kmax[ng],:lmax[ng],:,ng],iblank[:jmax[ng],:kmax[ng],:lmax[ng],ng]))
-
-    print 'writing turns grids...'
-    for ng in range(ngrids):
-      filename = "reout.%d"%ng
-      print filename
-      self.grids[ng].write_turns_grid(filename)
 
   def write_moose_grid(self,outfile,include_iblank=True):
 
@@ -50,7 +39,6 @@ class p3dGrids(object):
     # Write each set of grid data
     for ng in range(ngrids):
       write_moose_grid_data(outfile,self.grids[ng].X,self.grids[ng].iblank,include_iblank)
-
 
 class p3dGrid(object):
 
