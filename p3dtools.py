@@ -68,7 +68,6 @@ class TurnsGrid(p3dGrid):
 
     # Read grid data
     read_turns_grid_data(gridfile, includes_iblank, self.X, self.iblank)
-    # read_turns_grid_data(gridfile,self.X)
 
     self.jmax = jmax
     self.kmax = kmax
