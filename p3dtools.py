@@ -96,6 +96,34 @@ class TurnsBlade(TurnsGrid):
         break
     print "jtail1, jtail2 (python/C++ indexes):", self.jtail1, self.jtail2
 
+class MooseSolution(object):
+
+  def __init__(self, grids, solfile, namefile):
+    self.grids = grids
+
+    # Read name file 
+    with open(namefile,'r') as f:
+      self.varnames = [line.strip() for line in f.readlines()]
+    nvar = len(self.varnames)
+
+    # Lists of jmax,kmax,lmax for all grids
+    ngrids = len(self.grids.grids)
+    jmax = np.zeros([ngrids])
+    kmax = np.zeros([ngrids])
+    lmax = np.zeros([ngrids])
+    for ng in range(ngrids):
+      jmax[ng] = self.grids.grids[ng].X.shape[0]
+      kmax[ng] = self.grids.grids[ng].X.shape[1]
+      lmax[ng] = self.grids.grids[ng].X.shape[2]
+    jmm = max(jmax)
+    kmm = max(kmax)
+    lmm = max(lmax)
+
+    bigQ = read_moose_solution(solfile, jmax,kmax,lmax,nvar,jmm,kmm,lmm)
+
+    self.Q = []
+    for ng in range(ngrids):
+      self.Q.append(bigQ[:jmax[ng],:kmax[ng],:lmax[ng],:,ng]) 
 
 def turns2moose(gridfiles, outfile):
   '''Routine to convert files from TURNS format to that required for MOOSE '''

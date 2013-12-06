@@ -110,6 +110,31 @@
       
       end subroutine
 
+      subroutine read_moose_solution(Q, solfile, jmax, kmax, lmax, nvar,
+     >                               jmm,kmm,lmm,ngrids)
+      character *40 solfile
+      integer nvar, ngrids
+      integer jmax(ngrids), kmax(ngrids), lmax(ngrids)
+      double precision Q(jmm,kmm,lmm,nvar,ngrids)
+!f2py intent(in)  solfile, jmax,kmax,lmax,nvar,jmm,kmm,lmm,ngrids
+!f2py intent(out) Q
+      integer j,k,l,n,ng
+
+      open(unit=1, file=solfile, form='unformatted')
+      read(1) ngrids
+      read(1) (jmax(ng),kmax(ng),lmax(ng),nvar,ng=1,ngrids)
+
+      do ng = 1,ngrids
+      read(1) ((((Q(j,k,l,n,ng),j=1,jmax(ng)),
+     >                          k=1,kmax(ng)),
+     >                          l=1,lmax(ng)),
+     >                          n=1,3)
+      enddo
+
+      close(1)
+
+      end subroutine
+
 
       subroutine write_moose_grid_dimensions(outfile,jmax,kmax,lmax,ngrids)
       character *40 outfile
