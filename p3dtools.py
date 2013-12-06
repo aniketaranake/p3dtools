@@ -6,62 +6,11 @@ class turnsgrid(object):
   '''Class to read and work with a TURNS formatted grid'''
 
   def __init__(self, gridfile):
-    f = open(gridfile, "rb")
 
     try:
 
       # Read the grid dimensions 
-      byte = f.read(4)
-      assert(struct.unpack('i',byte)[0]==12)
-      self.jmax = struct.unpack('i',f.read(4))[0] 
-      self.kmax = struct.unpack('i',f.read(4))[0] 
-      self.lmax = struct.unpack('i',f.read(4))[0] 
-      byte = f.read(4)
-      assert(struct.unpack('i',byte)[0]==12)
-
-      # Some byte-math
-      self.npoints = self.jmax*self.kmax*self.lmax
-      self.xyzsize = self.npoints*3*8
-      self.ibsize  = self.npoints*4
-
-      # Read the grid data
-      record  = struct.unpack('i',f.read(4))[0]
-      if record==self.xyzsize:
-        print "XYZ data only. "
-        self.xyzdata = np.zeros((self.jmax,self.kmax,self.lmax,3))
-        self.ibdata  = np.zeros((self.jmax,self.kmax,self.lmax),dtype=np.int32)
-       
-        # Loop to read xyz data
-        for n in range(3):
-          for l in range(self.lmax):
-            for k in range(self.kmax):
-              for j in range(self.jmax):
-                self.xyzdata[j,k,l,n] = struct.unpack('d',f.read(8))[0]
-
-      elif record==self.xyzsize+self.ibsize:
-        print "iblank data included"
-        self.xyzdata = np.zeros((self.jmax,self.kmax,self.lmax,3))
-        self.ibdata  = np.zeros((self.jmax,self.kmax,self.lmax),dtype=np.int32)
-       
-        # Loop to read xyz data
-        for n in range(3):
-          for l in range(self.lmax):
-            for k in range(self.kmax):
-              for j in range(self.jmax):
-                self.xyzdata[j,k,l,n] = struct.unpack('d',f.read(8))[0]
-
-        # Loop to read iblank data
-        for l in range(self.lmax):
-          for k in range(self.kmax):
-            for j in range(self.jmax):
-              self.ibdata[j,k,l] = struct.unpack('i',f.read(4))[0]
-
-      else:
-        print "I don't understand your grid file!"
-        exit(1)
-        
-    finally:
-      f.close()
+      
 
 
 class turnsblade(turnsgrid):
@@ -134,7 +83,3 @@ def turns2moose(gridfiles, outfile):
 
 if __name__=="__main__":
     
-    gfs = ['grid.0','grid.1']
-    outfile = 'grid.xyz'
-
-    turns2moose(gfs,outfile)
