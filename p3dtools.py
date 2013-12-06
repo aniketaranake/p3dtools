@@ -3,7 +3,75 @@ import struct
 import numpy as np
 from gridtools import *
 
-class TurnsGrid(object):
+class p3dGrids(object):
+  '''Container for multiple Grid objects'''
+
+  grids = []
+  def __init__(self):
+    pass
+
+  def write_moose_grid(self,outfile):
+
+    # Lists of jmax,kmax,lmax for all grids
+    ngrids = len(grids)
+    jmax = np.zeros([ngrids])
+    kmax = np.zeros([ngrids])
+    lmax = np.zeros([ngrids])
+    for ng in range(ngrids):
+      jmax[ng] = grids[ng].jmax
+      kmax[ng] = grids[ng].kmax
+      lmax[ng] = grids[ng].lmax
+    jmm = max(jmax)
+    kmm = max(kmax)
+    lmm = max(lmax)
+
+    write_moose_grid_dimensions(outfile,jmm,kmm,lmm)
+
+
+#    f = open(outfile,'wb')
+#
+#    # ngrids and records
+#    f.write(struct.pack('i',4))
+#    f.write(struct.pack('i',ngrids))
+#    f.write(struct.pack('i',4))
+#
+#    # Grid dimensions
+#    ngrids = len(grids)
+#    record = ngrids*3*4 # 3=ndim, 4=size(int)
+#    f.write(struct.pack('i',record))
+#    for ng in range(ngrids):
+#      f.write(struct.pack('i',self.grids[ng].jmax))
+#      f.write(struct.pack('i',self.grids[ng].kmax))
+#      f.write(struct.pack('i',self.grids[ng].lmax))
+#    f.write(struct.pack('i',record))
+#
+#    # Grid data
+#    for ng in range(ngrids):
+#      record = (self.grids[ng].jmax*self.grids[ng].kmax*self.grids[ng].lmax)*(8*3+4) # 8=sizeof(double), 3=ndim, 4=sizeof(int) for iblank
+#      f.write(struct.pack('i',record))
+#      # Loop to write xyz data
+#      for n in range(3):
+#        for l in range(self.grids[ng].lmax):
+#          for k in range(self.grids[ng].kmax):
+#            for j in range(self.grids[ng].jmax):
+#              f.write(struct.pack('d',self.grids[ng].xyzdata[j,k,l,n]))
+#
+#      # Loop to write iblank data
+#      for l in range(self.grids[ng].lmax):
+#        for k in range(self.grids[ng].kmax):
+#          for j in range(self.grids[ng].jmax):
+#            f.write(struct.pack('i',self.grids[ng].ibdata[j,k,l]))
+#      f.write(struct.pack('i',record))
+
+
+
+class p3dGrid(object):
+
+  def __init__(self):
+    self.X      = np.empty([])
+    self.iblank = np.empty([],dtyp='i4')
+
+class TurnsGrid(p3dGrid):
   '''Class to read and work with a TURNS formatted grid'''
 
   def __init__(self, gridfile, includes_iblank=True):
@@ -55,41 +123,6 @@ def turns2moose(gridfiles, outfile):
 
     # Read grid and add it to list
     turnsgrids.append(turnsgrid(grid))
-
-  # Write moose file
-  f = open(outfile,'wb')
-
-  # ngrids and records
-  f.write(struct.pack('i',4))
-  f.write(struct.pack('i',ngrids))
-  f.write(struct.pack('i',4))
-
-  # Grid dimensions
-  record = ngrids*3*4 # 3=ndim, 4=size(int)
-  f.write(struct.pack('i',record))
-  for ng in range(ngrids):
-    f.write(struct.pack('i',turnsgrids[ng].jmax))
-    f.write(struct.pack('i',turnsgrids[ng].kmax))
-    f.write(struct.pack('i',turnsgrids[ng].lmax))
-  f.write(struct.pack('i',record))
-
-  # Grid data
-  for ng in range(ngrids):
-    record = (turnsgrids[ng].jmax*turnsgrids[ng].kmax*turnsgrids[ng].lmax)*(8*3+4) # 8=sizeof(double), 3=ndim, 4=sizeof(int) for iblank
-    f.write(struct.pack('i',record))
-    # Loop to write xyz data
-    for n in range(3):
-      for l in range(turnsgrids[ng].lmax):
-        for k in range(turnsgrids[ng].kmax):
-          for j in range(turnsgrids[ng].jmax):
-            f.write(struct.pack('d',turnsgrids[ng].xyzdata[j,k,l,n]))
-
-    # Loop to write iblank data
-    for l in range(turnsgrids[ng].lmax):
-      for k in range(turnsgrids[ng].kmax):
-        for j in range(turnsgrids[ng].jmax):
-          f.write(struct.pack('i',turnsgrids[ng].ibdata[j,k,l]))
-    f.write(struct.pack('i',record))
 
 
 if __name__=="__main__":

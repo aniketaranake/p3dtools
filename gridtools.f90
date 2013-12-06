@@ -39,3 +39,18 @@
       close(1)
       
       end subroutine
+
+
+      subroutine write_moose_grid_dimensions(outfile,jmm,kmm,lmm,ngrids)
+      character *40 outfile
+      integer ngrids
+      integer jmm(ngrids), kmm(ngrids), lmm(ngrids)
+!f2py intent(in) outfile, ngrids, jmm, kmm, lmm
+      integer n
+
+      open(unit=1, file=outfile, form='unformatted')
+      write(1) ngrids
+      write(1) (jmm(n), kmm(n), lmm(n), n=1,ngrids)
+      close(1)
+
+      end subroutine
